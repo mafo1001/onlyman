@@ -8,7 +8,7 @@ const navItems = [
   { to: '/radar', icon: MapPin, label: 'Radar' },
   { to: '/spark', icon: Flame, label: 'Spark' },
   { to: '/albums', icon: Image, label: 'Albums' },
-  { to: '/messages', icon: MessageCircle, label: 'Chat' },
+  { to: '/messages', icon: MessageCircle, label: 'Chat', matchPaths: ['/messages', '/chat'] },
   { to: '/profile', icon: User, label: 'Me' },
 ];
 
@@ -31,18 +31,20 @@ export default function BottomNav({ unreadCount = 0 }) {
       paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 4px)',
       paddingTop: '6px',
     }}>
-      {navItems.map(({ to, icon: Icon, label }) => (
+      {navItems.map(({ to, icon: Icon, label, matchPaths }) => (
         <NavLink
           key={to}
           to={to}
-          style={({ isActive }) => ({
+          style={({ isActive }) => {
+            const active = isActive || (matchPaths && matchPaths.some(p => window.location.hash.startsWith('#' + p)));
+            return ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '2px',
             padding: '6px 8px',
             borderRadius: 'var(--radius-md)',
-            color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+            color: active ? 'var(--accent)' : 'var(--text-muted)',
             transition: 'color 0.2s ease',
             position: 'relative',
             textDecoration: 'none',
@@ -50,11 +52,13 @@ export default function BottomNav({ unreadCount = 0 }) {
             minHeight: '44px',
             justifyContent: 'center',
             WebkitTapHighlightColor: 'transparent',
-          })}
+          });}}
         >
-          {({ isActive }) => (
+          {({ isActive }) => {
+            const active = isActive || (matchPaths && matchPaths.some(p => window.location.hash.startsWith('#' + p)));
+            return (
             <>
-              {isActive && (
+              {active && (
                 <div style={{
                   position: 'absolute',
                   top: -1,
@@ -69,9 +73,9 @@ export default function BottomNav({ unreadCount = 0 }) {
               )}
               <div style={{ position: 'relative' }}>
                 {label === 'Spark' ? (
-                  <DemonLogo size={22} glow={isActive} />
+                  <DemonLogo size={22} glow={active} />
                 ) : (
-                  <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
+                  <Icon size={20} strokeWidth={active ? 2.5 : 1.5} />
                 )}
                 {label === 'Chat' && unreadCount > 0 && (
                   <span style={{
@@ -89,11 +93,11 @@ export default function BottomNav({ unreadCount = 0 }) {
                   }}>{unreadCount}</span>
                 )}
               </div>
-              <span style={{ fontSize: '10px', fontWeight: isActive ? 600 : 400 }}>
+              <span style={{ fontSize: '10px', fontWeight: active ? 600 : 400 }}>
                 {label}
               </span>
             </>
-          )}
+          );}}
         </NavLink>
       ))}
     </nav>

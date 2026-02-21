@@ -106,11 +106,11 @@ function App() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setMyLocation({ lat: 48.8566, lng: 2.3522 }), // Default to Paris
+        () => setMyLocation({ lat: 45.5017, lng: -73.5673 }), // Default to Montréal
         { timeout: 5000 }
       );
     } else {
-      setMyLocation({ lat: 48.8566, lng: 2.3522 });
+      setMyLocation({ lat: 45.5017, lng: -73.5673 });
     }
   }, []);
 
@@ -227,18 +227,18 @@ function App() {
   const hideNav = ['/signup', '/settings', '/terms', '/privacy'].includes(location.pathname);
 
   return (
-    <div style={{ background: 'var(--bg-primary, #0a0a0a)', minHeight: '100vh', minHeight: '100dvh', paddingBottom: hideNav ? 0 : 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: 'var(--bg-primary, #0a0a0a)', minHeight: '100dvh', paddingBottom: hideNav ? 0 : 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))', fontFamily: 'Inter, sans-serif' }}>
       <Routes>
         <Route path="/" element={isSignedUp ? <GridPage users={users} blockedUsers={blockedUsers} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} ghostMode={ghostMode} isPremium={isPremium} /> : <Navigate to="/signup" replace />} />
-        <Route path="/radar" element={isSignedUp ? <RadarPage users={users} myLocation={myLocation} /> : <Navigate to="/signup" replace />} />
-        <Route path="/spark" element={isSignedUp ? <SparkPage users={users} /> : <Navigate to="/signup" replace />} />
-        <Route path="/messages" element={isSignedUp ? <MessagesPage conversations={conversations} /> : <Navigate to="/signup" replace />} />
+        <Route path="/radar" element={isSignedUp ? <RadarPage users={users} myLocation={myLocation} blockedUsers={blockedUsers} /> : <Navigate to="/signup" replace />} />
+        <Route path="/spark" element={isSignedUp ? <SparkPage users={users} blockedUsers={blockedUsers} /> : <Navigate to="/signup" replace />} />
+        <Route path="/messages" element={isSignedUp ? <MessagesPage conversations={conversations} blockedUsers={blockedUsers} /> : <Navigate to="/signup" replace />} />
         <Route path="/chat/:id" element={isSignedUp ? <ChatPage conversations={conversations} users={users} onSendMessage={handleSendMessage} /> : <Navigate to="/signup" replace />} />
         <Route path="/events" element={isSignedUp ? <EventsPage events={events} onJoinEvent={handleJoinEvent} /> : <Navigate to="/signup" replace />} />
         <Route path="/profile" element={isSignedUp ? <ProfilePage isOwnProfile={true} users={users} albums={albums} currentUser={currentUser} /> : <Navigate to="/signup" replace />} />
         <Route path="/profile/:id" element={isSignedUp ? <ProfilePage users={users} albums={albums} onBlock={handleBlock} blockedUsers={blockedUsers} /> : <Navigate to="/signup" replace />} />
         <Route path="/signup" element={<SignUpPage onSignUp={handleSignUp} />} />
-        <Route path="/settings" element={<SettingsPage currentUser={currentUser} setCurrentUser={setCurrentUser} onLogout={handleLogout} ghostMode={ghostMode} setGhostMode={setGhostMode} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} isPremium={isPremium} />} />
+        <Route path="/settings" element={isSignedUp ? <SettingsPage currentUser={currentUser} setCurrentUser={setCurrentUser} onLogout={handleLogout} ghostMode={ghostMode} setGhostMode={setGhostMode} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} isPremium={isPremium} /> : <Navigate to="/signup" replace />} />
         <Route path="/albums" element={isSignedUp ? <AlbumsPage albums={albums} setAlbums={setAlbums} users={users} /> : <Navigate to="/signup" replace />} />
         <Route path="/albums/:albumId" element={isSignedUp ? <AlbumDetailPage albums={albums} setAlbums={setAlbums} users={users} /> : <Navigate to="/signup" replace />} />
         <Route path="/terms" element={<TermsPage />} />

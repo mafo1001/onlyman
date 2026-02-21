@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Search, MoreHorizontal, Send, Image, Smile, Mic, Phone, Video, Shield, MapPin } from 'lucide-react';
 
-export function MessagesPage({ conversations }) {
+export function MessagesPage({ conversations = [], blockedUsers = [] }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filtered = conversations.filter(c =>
+    !blockedUsers.includes(c.user.id) &&
     c.user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -177,7 +178,7 @@ export function ChatPage({ conversations, users, onSendMessage }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', height: '100dvh', background: 'var(--bg-primary)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--bg-primary)' }}>
       {/* Chat Header */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '12px',

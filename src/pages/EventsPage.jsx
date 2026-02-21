@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Users, ChevronRight, Search, Filter } from 'lucide-react';
+import { Calendar, MapPin, Users, ChevronRight } from 'lucide-react';
 
-export default function EventsPage({ events, onJoinEvent }) {
+export default function EventsPage({ events = [], onJoinEvent }) {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('All');
   const categories = ['All', 'Party', 'Social', 'Outdoors', 'Culture'];

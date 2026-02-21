@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   const effectiveDate = 'February 20, 2026';
 
   return (
-    <div style={{ minHeight: '100vh', minHeight: '100dvh', background: 'var(--bg-primary)' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)' }}>
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12,

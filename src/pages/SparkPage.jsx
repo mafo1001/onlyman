@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, Heart, X, MessageCircle, Shield, MapPin, ChevronLeft, ChevronRight, Zap, Users, Sparkles } from 'lucide-react';
+import { Flame, Heart, X, MessageCircle, Shield, MapPin, Zap, Users, Sparkles } from 'lucide-react';
 import DemonLogo from '../components/DemonLogo';
 
-export default function SparkPage({ users }) {
+export default function SparkPage({ users, blockedUsers = [] }) {
   const navigate = useNavigate();
   const [liked, setLiked] = useState(new Set());
   const [passed, setPassed] = useState(new Set());
@@ -11,8 +11,8 @@ export default function SparkPage({ users }) {
   const [tab, setTab] = useState('spotlight'); // 'spotlight' | 'matches' | 'likes'
 
   const availableUsers = useMemo(() => {
-    return users.filter(u => !passed.has(u.id) && !liked.has(u.id));
-  }, [users, liked, passed]);
+    return users.filter(u => !passed.has(u.id) && !liked.has(u.id) && !blockedUsers.includes(u.id));
+  }, [users, liked, passed, blockedUsers]);
 
   const currentUser = availableUsers.length > 0 ? availableUsers[0] : null;
 

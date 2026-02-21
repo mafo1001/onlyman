@@ -1,17 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import DemonLogo from '../components/DemonLogo';
-import { OnlyManWordmark } from '../components/DemonLogo';
 
-export default function RadarPage({ users }) {
+export default function RadarPage({ users, myLocation, blockedUsers = [] }) {
   const navigate = useNavigate();
-  const [zoom, setZoom] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
   const containerRef = useRef();
-  const [center, setCenter] = useState({ x: 50, y: 50 });
-
-  const mapSize = 600 * zoom;
 
   const onlineUsers = users.filter(u => u.status === 'online' || u.status === 'away');
 
@@ -98,7 +92,7 @@ export default function RadarPage({ users }) {
         ))}
 
         {/* User dots */}
-        {users.map((user, i) => {
+        {users.filter(u => !blockedUsers.includes(u.id)).map((user, i) => {
           const maxD = 50;
           const normalizedDist = Math.min(user.distance / maxD, 1);
           const angle = (i / users.length) * 2 * Math.PI + (user.id.charCodeAt(5) || 0) * 0.3;

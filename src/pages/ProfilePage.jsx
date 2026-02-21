@@ -15,6 +15,7 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
 
   const [showEdit, setShowEdit] = useState(false);
   const [editForm, setEditForm] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const user = isOwnProfile
     ? (currentUser ? {
@@ -237,6 +238,7 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
               />
             </button>
             <button
+              onClick={() => { navigator.clipboard?.writeText(window.location.href); }}
               style={{
                 width: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 borderRadius: 'var(--radius-md)',
@@ -333,7 +335,7 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
             }}>
               <Ban size={14} /> Block
             </button>
-            <button onClick={() => { alert('User reported. Our team will review this.'); }} style={{
+            <button onClick={() => { setToast('User reported. Our team will review this.'); setTimeout(() => setToast(null), 3000); }} style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               fontSize: '13px', color: 'var(--text-muted)',
             }}>
@@ -526,7 +528,7 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
             {[
               { icon: Share2, label: 'Share Profile', color: 'var(--text-primary)', action: () => { navigator.clipboard?.writeText(window.location.href); setShowActions(false); } },
               { icon: Ban, label: 'Block User', color: 'var(--text-primary)', action: () => { if (onBlock) onBlock(user.id); setShowActions(false); navigate(-1); } },
-              { icon: Flag, label: 'Report User', color: 'var(--danger)', action: () => { alert('User reported. Our team will review this.'); setShowActions(false); } },
+              { icon: Flag, label: 'Report User', color: 'var(--danger)', action: () => { setToast('User reported. Our team will review this.'); setTimeout(() => setToast(null), 3000); setShowActions(false); } },
             ].map(({ icon: Icon, label, color, action }) => (
               <button
                 key={label}
@@ -541,6 +543,23 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 'calc(var(--bottom-nav-height) + 20px)',
+          left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--bg-elevated)', color: 'var(--text-primary)',
+          padding: '12px 24px', borderRadius: 'var(--radius-lg)',
+          fontSize: '14px', fontWeight: 500,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          border: '1px solid var(--border-accent)',
+          zIndex: 10000, whiteSpace: 'nowrap',
+          animation: 'slideUp 0.3s ease',
+        }}>
+          {toast}
         </div>
       )}
     </div>
