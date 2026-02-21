@@ -241,6 +241,16 @@ function App() {
     ));
   }, []);
 
+  // Create event
+  const handleCreateEvent = useCallback((event) => {
+    setEvents(prev => [event, ...prev]);
+  }, []);
+
+  // Unblock user
+  const handleUnblock = useCallback((userId) => {
+    setBlockedUsers(prev => prev.filter(id => id !== userId));
+  }, []);
+
   // Total unread count
   const unreadCount = useMemo(() =>
     conversations.reduce((sum, c) => sum + (c.unread || 0), 0),
@@ -259,11 +269,11 @@ function App() {
         <Route path="/spark" element={isSignedUp ? <RouteErrorBoundary name="Spark"><SparkPage users={users} blockedUsers={blockedUsers} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/messages" element={isSignedUp ? <RouteErrorBoundary name="Messages"><MessagesPage conversations={conversations} blockedUsers={blockedUsers} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/chat/:id" element={isSignedUp ? <RouteErrorBoundary name="Chat"><ChatPage conversations={conversations} users={users} onSendMessage={handleSendMessage} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
-        <Route path="/events" element={isSignedUp ? <RouteErrorBoundary name="Events"><EventsPage events={events} onJoinEvent={handleJoinEvent} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/events" element={isSignedUp ? <RouteErrorBoundary name="Events"><EventsPage events={events} onJoinEvent={handleJoinEvent} onCreateEvent={handleCreateEvent} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/profile" element={isSignedUp ? <RouteErrorBoundary name="Profile"><ProfilePage isOwnProfile={true} users={users} albums={albums} currentUser={currentUser} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/profile/:id" element={isSignedUp ? <RouteErrorBoundary name="Profile"><ProfilePage users={users} albums={albums} onBlock={handleBlock} blockedUsers={blockedUsers} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/signup" element={<SignUpPage onSignUp={handleSignUp} />} />
-        <Route path="/settings" element={isSignedUp ? <RouteErrorBoundary name="Settings"><SettingsPage currentUser={currentUser} setCurrentUser={setCurrentUser} onLogout={handleLogout} ghostMode={ghostMode} setGhostMode={setGhostMode} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} isPremium={isPremium} distanceUnit={distanceUnit} setDistanceUnit={setDistanceUnit} notifications={notifications} setNotifications={setNotifications} showOnline={showOnline} setShowOnline={setShowOnline} showDistance={showDistance} setShowDistance={setShowDistance} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/settings" element={isSignedUp ? <RouteErrorBoundary name="Settings"><SettingsPage currentUser={currentUser} setCurrentUser={setCurrentUser} onLogout={handleLogout} ghostMode={ghostMode} setGhostMode={setGhostMode} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} isPremium={isPremium} distanceUnit={distanceUnit} setDistanceUnit={setDistanceUnit} notifications={notifications} setNotifications={setNotifications} showOnline={showOnline} setShowOnline={setShowOnline} showDistance={showDistance} setShowDistance={setShowDistance} blockedUsers={blockedUsers} onUnblock={handleUnblock} users={users} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/albums" element={isSignedUp ? <RouteErrorBoundary name="Albums"><AlbumsPage albums={albums} setAlbums={setAlbums} users={users} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/albums/:albumId" element={isSignedUp ? <RouteErrorBoundary name="Album"><AlbumDetailPage albums={albums} setAlbums={setAlbums} users={users} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/terms" element={<TermsPage />} />

@@ -1,11 +1,39 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Users, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Users, ChevronRight, X, Plus } from 'lucide-react';
 
-export default function EventsPage({ events = [], onJoinEvent }) {
+const EVENT_EMOJIS = ['🎉', '🌈', '☕', '🏔️', '🎮', '🎨', '⛓️', '🎵', '🍸', '🏋️', '🎬', '🏖️', '🍕', '🎤', '🚴'];
+
+export default function EventsPage({ events = [], onJoinEvent, onCreateEvent }) {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('All');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newEvent, setNewEvent] = useState({ title: '', description: '', location: '', category: 'Social', image: '🎉', date: '' });
+  const [toast, setToast] = useState(null);
   const categories = ['All', 'Party', 'Social', 'Outdoors', 'Culture'];
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
+
+  const handleCreateEvent = () => {
+    if (!newEvent.title.trim()) return showToast('Please enter an event title');
+    if (!newEvent.date) return showToast('Please select a date');
+    const event = {
+      id: `evt-${Date.now()}`,
+      title: newEvent.title.trim(),
+      description: newEvent.description.trim() || 'No description provided.',
+      date: new Date(newEvent.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+      location: newEvent.location.trim() || 'TBD',
+      distance: '0 km',
+      attendees: 1,
+      image: newEvent.image,
+      category: newEvent.category,
+      joined: true,
+    };
+    if (onCreateEvent) onCreateEvent(event);
+    setShowCreateModal(false);
+    setNewEvent({ title: '', description: '', location: '', category: 'Social', image: '🎉', date: '' });
+    showToast('Event created!');
+  };
 
   const filtered = activeCategory === 'All'
     ? events
@@ -166,15 +194,161 @@ export default function EventsPage({ events = [], onJoinEvent }) {
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>
             Create a meetup and connect with the community
           </p>
-          <button style={{
-            padding: '10px 24px', borderRadius: 'var(--radius-full)',
-            background: 'var(--bg-elevated)', border: '1px solid var(--border-accent)',
-            color: 'var(--accent)', fontWeight: 600, fontSize: '13px',
-          }}>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            style={{
+              padding: '10px 24px', borderRadius: 'var(--radius-full)',
+              background: 'var(--bg-elevated)', border: '1px solid var(--border-accent)',
+              color: 'var(--accent)', fontWeight: 600, fontSize: '13px',
+              cursor: 'pointer',
+            }}
+          >
             Create Event
           </button>
         </div>
       </div>
+
+      {/* Create Event Modal */}
+      {showCreateModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 2000,
+            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          }}
+          onClick={() => setShowCreateModal(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 480, maxHeight: '85vh', overflowY: 'auto',
+              background: 'var(--bg-secondary)', borderRadius: '20px 20px 0 0',
+              padding: '20px', animation: 'slideUp 0.3s ease',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800 }}>Create Event</h2>
+              <button aria-label="Close" onClick={() => setShowCreateModal(false)} style={{ padding: 6, color: 'var(--text-muted)' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Emoji picker */}
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>Event Icon</label>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+              {EVENT_EMOJIS.map(e => (
+                <button key={e} onClick={() => setNewEvent(p => ({ ...p, image: e }))} style={{
+                  width: 40, height: 40, borderRadius: 8, fontSize: 20,
+                  background: newEvent.image === e ? 'var(--accent)' : 'var(--bg-tertiary)',
+                  border: newEvent.image === e ? '2px solid var(--accent)' : '1px solid var(--border-subtle)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>{e}</button>
+              ))}
+            </div>
+
+            {/* Title */}
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Title *</label>
+            <input
+              type="text"
+              placeholder="e.g. Pride Night Out"
+              value={newEvent.title}
+              onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))}
+              maxLength={60}
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 10,
+                background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)',
+                fontSize: 15, marginBottom: 12, minHeight: 44,
+              }}
+            />
+
+            {/* Description */}
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Description</label>
+            <textarea
+              placeholder="Tell people what to expect..."
+              value={newEvent.description}
+              onChange={e => setNewEvent(p => ({ ...p, description: e.target.value }))}
+              maxLength={300}
+              rows={3}
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 10,
+                background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)',
+                fontSize: 14, marginBottom: 12, resize: 'vertical', fontFamily: 'inherit',
+              }}
+            />
+
+            {/* Date + Time */}
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Date & Time *</label>
+            <input
+              type="datetime-local"
+              value={newEvent.date}
+              onChange={e => setNewEvent(p => ({ ...p, date: e.target.value }))}
+              min={new Date().toISOString().slice(0, 16)}
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 10,
+                background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)',
+                fontSize: 15, marginBottom: 12, minHeight: 44, colorScheme: 'dark',
+              }}
+            />
+
+            {/* Location */}
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Location</label>
+            <input
+              type="text"
+              placeholder="e.g. The Green Bean Café"
+              value={newEvent.location}
+              onChange={e => setNewEvent(p => ({ ...p, location: e.target.value }))}
+              maxLength={80}
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 10,
+                background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)',
+                fontSize: 15, marginBottom: 12, minHeight: 44,
+              }}
+            />
+
+            {/* Category */}
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>Category</label>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 20 }}>
+              {['Party', 'Social', 'Outdoors', 'Culture'].map(cat => (
+                <button key={cat} onClick={() => setNewEvent(p => ({ ...p, category: cat }))} style={{
+                  padding: '6px 16px', borderRadius: 99, fontSize: 12, fontWeight: 600,
+                  background: newEvent.category === cat ? 'var(--accent)' : 'var(--bg-tertiary)',
+                  color: newEvent.category === cat ? '#000' : 'var(--text-secondary)',
+                  border: newEvent.category === cat ? 'none' : '1px solid var(--border-subtle)',
+                  cursor: 'pointer',
+                }}>{cat}</button>
+              ))}
+            </div>
+
+            {/* Submit */}
+            <button
+              onClick={handleCreateEvent}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 12,
+                background: 'var(--accent)', color: '#000',
+                fontWeight: 700, fontSize: 15, border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <Plus size={16} style={{ verticalAlign: '-3px', marginRight: 6 }} />
+              Create Event
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--bg-elevated)', color: 'var(--text-primary)',
+          padding: '10px 24px', borderRadius: 99, fontSize: 13, fontWeight: 600,
+          zIndex: 3000, boxShadow: 'var(--shadow-lg)',
+          border: '1px solid var(--border-accent)',
+          animation: 'fadeIn 0.2s ease',
+        }}>{toast}</div>
+      )}
     </div>
   );
 }

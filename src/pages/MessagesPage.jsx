@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Search, MoreHorizontal, Send, Image, Smile, Mic, Phone, Video, Shield, MapPin } from 'lucide-react';
+import { ArrowLeft, Search, MoreHorizontal, Send, Image, Smile, Mic, Phone, Video, Shield, MapPin, X, Camera } from 'lucide-react';
 
 export function MessagesPage({ conversations = [], blockedUsers = [] }) {
   const navigate = useNavigate();
@@ -157,20 +157,83 @@ export function ChatPage({ conversations, users, onSendMessage }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState('');
+  const [toast, setToast] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [callOverlay, setCallOverlay] = useState(null); // 'audio' | 'video' | null
   const messagesEndRef = useRef();
+  const photoInputRef = useRef();
 
   const conv = conversations.find(c => c.user.id === id);
   const user = conv?.user || users.find(u => u.id === id);
   const messages = conv?.messages || [];
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const sendMessage = () => {
-    if (!newMessage.trim() || !user) return;
-    if (onSendMessage) onSendMessage(user.id, newMessage.trim());
+    if (!newMessage.trim() && !photoPreview) return;
+    if (!user) return;
+    if (photoPreview) {
+      // Send photo as a message with image marker
+      if (onSendMessage) onSendMessage(user.id, `📷 Photo shared`);
+      setPhotoPreview(null);
+    }
+    if (newMessage.trim()) {
+      if (onSendMessage) onSendMessage(user.id, newMessage.trim());
+    }
     setNewMessage('');
+  };
+
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select an image file');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('Image must be under 10MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => setPhotoPreview(reader.result);
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleVoiceMessage = () => {
+    if (isRecording) {
+      setIsRecording(false);
+      if (onSendMessage && user) onSendMessage(user.id, '🎙️ Voice message');
+      showToast('Voice message sent');
+    } else {
+      setIsRecording(true);
+      showToast('Recording... tap again to send');
+      // Auto-stop after 30s
+      setTimeout(() => {
+        setIsRecording(prev => {
+          if (prev) {
+            if (onSendMessage && user) onSendMessage(user.id, '🎙️ Voice message');
+            showToast('Voice message sent');
+          }
+          return false;
+        });
+      }, 30000);
+    }
+  };
+
+  const startCall = (type) => {
+    setCallOverlay(type);
+    showToast(`${type === 'video' ? 'Video' : 'Audio'} calling ${user?.name}...`);
+    // Simulate call ending after a few seconds
+    setTimeout(() => {
+      setCallOverlay(null);
+      showToast('Call ended');
+    }, 4000);
   };
 
   if (!user) {
@@ -220,10 +283,10 @@ export function ChatPage({ conversations, users, onSendMessage }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '4px' }}>
-          <button aria-label="Call" style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
+          <button aria-label="Call" onClick={() => startCall('audio')} style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', cursor: 'pointer' }}>
             <Phone size={18} />
           </button>
-          <button aria-label="Video call" style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
+          <button aria-label="Video call" onClick={() => startCall('video')} style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', cursor: 'pointer' }}>
             <Video size={18} />
           </button>
         </div>
@@ -285,6 +348,44 @@ export function ChatPage({ conversations, users, onSendMessage }) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Photo Preview */}
+      {photoPreview && (
+        <div style={{
+          padding: '8px 12px', background: 'var(--bg-secondary)',
+          borderTop: '1px solid var(--border-subtle)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <div style={{ position: 'relative' }}>
+            <img src={photoPreview} alt="Preview" style={{
+              width: 60, height: 60, borderRadius: 8, objectFit: 'cover',
+            }} />
+            <button
+              aria-label="Remove photo"
+              onClick={() => setPhotoPreview(null)}
+              style={{
+                position: 'absolute', top: -6, right: -6,
+                width: 20, height: 20, borderRadius: '50%',
+                background: 'var(--danger)', color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: 'none', cursor: 'pointer', padding: 0,
+              }}
+            >
+              <X size={12} />
+            </button>
+          </div>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Ready to send</span>
+        </div>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handlePhotoSelect}
+        style={{ display: 'none' }}
+      />
+
       {/* Input */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '8px',
@@ -294,7 +395,7 @@ export function ChatPage({ conversations, users, onSendMessage }) {
         borderTop: '1px solid var(--border-subtle)',
         flexShrink: 0,
       }}>
-        <button aria-label="Attach image" style={{ padding: '8px', color: 'var(--text-muted)' }}>
+        <button aria-label="Attach photo" onClick={() => photoInputRef.current?.click()} style={{ padding: '8px', color: 'var(--text-muted)', cursor: 'pointer' }}>
           <Image size={20} />
         </button>
         <input
@@ -313,7 +414,7 @@ export function ChatPage({ conversations, users, onSendMessage }) {
             minHeight: '44px',
           }}
         />
-        {newMessage.trim() ? (
+        {newMessage.trim() || photoPreview ? (
           <button
             aria-label="Send message"
             onClick={sendMessage}
@@ -321,16 +422,69 @@ export function ChatPage({ conversations, users, onSendMessage }) {
               width: '40px', height: '40px', borderRadius: '50%',
               background: 'var(--accent)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', border: 'none',
             }}
           >
             <Send size={18} color="#000" />
           </button>
         ) : (
-          <button aria-label="Voice message" style={{ padding: '8px', color: 'var(--text-muted)' }}>
+          <button
+            aria-label={isRecording ? 'Stop recording' : 'Voice message'}
+            onClick={handleVoiceMessage}
+            style={{
+              padding: '8px',
+              color: isRecording ? 'var(--danger)' : 'var(--text-muted)',
+              cursor: 'pointer',
+              animation: isRecording ? 'pulse-glow 1s ease-in-out infinite' : 'none',
+            }}
+          >
             <Mic size={20} />
           </button>
         )}
       </div>
+
+      {/* Call Overlay */}
+      {callOverlay && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 3000,
+          background: 'rgba(0,0,0,0.92)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 20,
+        }}>
+          <img src={user.avatar} alt="" style={{
+            width: 96, height: 96, borderRadius: '50%', objectFit: 'cover',
+            border: '3px solid var(--accent)',
+          }} />
+          <h3 style={{ fontSize: 20, fontWeight: 700 }}>{user.name}</h3>
+          <p style={{ color: 'var(--accent)', fontSize: 14 }}>
+            {callOverlay === 'video' ? '📹' : '📞'} Calling...
+          </p>
+          <button
+            aria-label="End call"
+            onClick={() => { setCallOverlay(null); showToast('Call ended'); }}
+            style={{
+              marginTop: 20, width: 60, height: 60, borderRadius: '50%',
+              background: 'var(--danger)', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <Phone size={24} color="#fff" />
+          </button>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--bg-elevated)', color: 'var(--text-primary)',
+          padding: '10px 24px', borderRadius: 99, fontSize: 13, fontWeight: 600,
+          zIndex: 4000, boxShadow: 'var(--shadow-lg)',
+          border: '1px solid var(--border-accent)',
+          animation: 'fadeIn 0.2s ease',
+        }}>{toast}</div>
+      )}
     </div>
   );
 }

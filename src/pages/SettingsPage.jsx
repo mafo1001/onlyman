@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, MapPin, Shield, Eye, Trash2, LogOut, ChevronRight, Moon, FileText, Ghost, Zap } from 'lucide-react';
+import { ArrowLeft, Bell, MapPin, Shield, Eye, Trash2, LogOut, ChevronRight, Moon, FileText, Ghost, Zap, X, Lock } from 'lucide-react';
 
-export default function SettingsPage({ currentUser, setCurrentUser, onLogout, ghostMode, setGhostMode, rightNowMode, rightNowExpiry, activateRightNow, deactivateRightNow, isPremium, distanceUnit, setDistanceUnit, notifications, setNotifications, showOnline, setShowOnline, showDistance, setShowDistance }) {
+export default function SettingsPage({ currentUser, setCurrentUser, onLogout, ghostMode, setGhostMode, rightNowMode, rightNowExpiry, activateRightNow, deactivateRightNow, isPremium, distanceUnit, setDistanceUnit, notifications, setNotifications, showOnline, setShowOnline, showDistance, setShowDistance, blockedUsers = [], onUnblock, users = [] }) {
   const navigate = useNavigate();
-  const [darkMode] = useState(true); // Always dark
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showBlockedModal, setShowBlockedModal] = useState(false);
 
   const Toggle = ({ value, onChange, label }) => (
     <button
@@ -196,7 +196,9 @@ export default function SettingsPage({ currentUser, setCurrentUser, onLogout, gh
           <Row
             icon={Shield}
             label="Blocked Users"
-            onClick={() => alert('Blocked users list — coming soon')}
+            right={blockedUsers.length > 0 ? <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{blockedUsers.length}</span> : null}
+            hasChevron
+            onClick={() => setShowBlockedModal(true)}
           />
         </Section>
 
@@ -214,7 +216,12 @@ export default function SettingsPage({ currentUser, setCurrentUser, onLogout, gh
           <Row
             icon={Moon}
             label="Dark Mode"
-            right={<Toggle value={darkMode} onChange={() => {}} label="Dark mode" />}
+            right={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>Always On</span>
+                <Lock size={12} color="var(--text-muted)" />
+              </div>
+            }
           />
         </Section>
 
@@ -318,6 +325,94 @@ export default function SettingsPage({ currentUser, setCurrentUser, onLogout, gh
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Blocked Users Modal */}
+      {showBlockedModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Blocked users"
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 2000,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            backdropFilter: 'blur(8px)',
+          }}
+          onClick={() => setShowBlockedModal(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 480, maxHeight: '70vh',
+              background: 'var(--bg-secondary)', borderRadius: '20px 20px 0 0',
+              padding: '20px', overflowY: 'auto',
+              animation: 'slideUp 0.3s ease',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800 }}>Blocked Users</h2>
+              <button aria-label="Close" onClick={() => setShowBlockedModal(false)} style={{ padding: 6, color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {blockedUsers.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--text-muted)' }}>
+                <Shield size={32} style={{ marginBottom: 8, opacity: 0.5 }} />
+                <p style={{ fontSize: 14 }}>No blocked users</p>
+                <p style={{ fontSize: 12, marginTop: 4 }}>Users you block will appear here</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {blockedUsers.map(userId => {
+                  const blockedUser = users.find(u => u.id === userId);
+                  return (
+                    <div key={userId} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '10px 12px', borderRadius: 10,
+                      background: 'var(--bg-tertiary)',
+                    }}>
+                      {blockedUser?.avatar ? (
+                        <img src={blockedUser.avatar} alt="" style={{
+                          width: 40, height: 40, borderRadius: '50%', objectFit: 'cover',
+                        }} />
+                      ) : (
+                        <div style={{
+                          width: 40, height: 40, borderRadius: '50%',
+                          background: 'var(--bg-elevated)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 16, color: 'var(--text-muted)',
+                        }}>?</div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600 }}>
+                          {blockedUser?.name || `User ${userId.slice(0, 8)}`}
+                        </p>
+                        {blockedUser?.age && (
+                          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                            {blockedUser.age} · {blockedUser.tribe}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => onUnblock && onUnblock(userId)}
+                        style={{
+                          padding: '6px 14px', borderRadius: 99,
+                          background: 'rgba(255,59,59,0.1)',
+                          border: '1px solid rgba(255,59,59,0.3)',
+                          color: '#ff4444', fontSize: 12, fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Unblock
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
