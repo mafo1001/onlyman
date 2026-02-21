@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "cap:sync": "npx cap sync",
     "cap:android": "npx cap open android",
     "build:android": "vite build && npx cap sync android",
@@ -23,6 +25,7 @@
     "@capacitor/keyboard": "^8.0.0",
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.1",
+    "@supabase/supabase-js": "^2.97.0",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -30,6 +33,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
@@ -37,6 +42,8 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
-    "vite": "^7.3.1"
+    "jsdom": "^28.1.0",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
   }
 }

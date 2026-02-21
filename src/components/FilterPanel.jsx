@@ -34,7 +34,11 @@ export default function FilterPanel({ filters, setFilters, onClose }) {
   };
 
   return (
-    <div style={{
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Filters"
+      style={{
       position: 'fixed',
       inset: 0,
       background: 'rgba(0,0,0,0.8)',

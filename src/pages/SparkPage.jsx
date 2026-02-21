@@ -5,10 +5,28 @@ import DemonLogo from '../components/DemonLogo';
 
 export default function SparkPage({ users, blockedUsers = [] }) {
   const navigate = useNavigate();
-  const [liked, setLiked] = useState(new Set());
-  const [passed, setPassed] = useState(new Set());
+  const [liked, setLiked] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('om_spark_liked') || '[]')); } catch { return new Set(); }
+  });
+  const [passed, setPassed] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('om_spark_passed') || '[]')); } catch { return new Set(); }
+  });
+  const [mutualMatches, setMutualMatches] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('om_spark_matches') || '[]')); } catch { return new Set(); }
+  });
   const [matched, setMatched] = useState(null);
   const [tab, setTab] = useState('spotlight'); // 'spotlight' | 'matches' | 'likes'
+
+  // Persist to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('om_spark_liked', JSON.stringify([...liked]));
+  }, [liked]);
+  React.useEffect(() => {
+    localStorage.setItem('om_spark_passed', JSON.stringify([...passed]));
+  }, [passed]);
+  React.useEffect(() => {
+    localStorage.setItem('om_spark_matches', JSON.stringify([...mutualMatches]));
+  }, [mutualMatches]);
 
   const availableUsers = useMemo(() => {
     return users.filter(u => !passed.has(u.id) && !liked.has(u.id) && !blockedUsers.includes(u.id));
@@ -22,6 +40,7 @@ export default function SparkPage({ users, blockedUsers = [] }) {
     // Mutual match: users who also "liked" back (simulated per user seed)
     const matchChance = ((currentUser.id.charCodeAt(5) || 0) % 10) / 10;
     if (matchChance > 0.5) {
+      setMutualMatches(prev => new Set([...prev, currentUser.id]));
       setMatched(currentUser);
     }
   };
@@ -31,7 +50,8 @@ export default function SparkPage({ users, blockedUsers = [] }) {
     setPassed(prev => new Set([...prev, currentUser.id]));
   };
 
-  const likedUsers = users.filter(u => liked.has(u.id));
+  const likedUsers = users.filter(u => liked.has(u.id) && !mutualMatches.has(u.id));
+  const matchedUsers = users.filter(u => mutualMatches.has(u.id));
 
   return (
     <div style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 16px)', minHeight: '100vh' }}>
@@ -82,7 +102,7 @@ export default function SparkPage({ users, blockedUsers = [] }) {
             You've gone through all available profiles. Check back later for new guys nearby.
           </p>
           <button
-            onClick={() => { setPassed(new Set()); setLiked(new Set()); }}
+            onClick={() => { setPassed(new Set()); setLiked(new Set()); setMutualMatches(new Set()); }}
             style={{ marginTop: '24px', padding: '12px 28px', borderRadius: 'var(--radius-full)', background: 'var(--accent)', color: '#000', fontWeight: 700, fontSize: '14px' }}
           >Reset & Start Over</button>
         </div>
@@ -163,6 +183,7 @@ export default function SparkPage({ users, blockedUsers = [] }) {
             padding: '8px 16px',
           }}>
             <button
+              aria-label="Pass"
               onClick={handlePass}
               style={{
                 width: '60px', height: '60px', borderRadius: '50%',
@@ -174,6 +195,7 @@ export default function SparkPage({ users, blockedUsers = [] }) {
               <X size={26} color="var(--text-muted)" />
             </button>
             <button
+              aria-label="View profile"
               onClick={() => navigate(`/profile/${currentUser.id}`)}
               style={{
                 width: '50px', height: '50px', borderRadius: '50%',
@@ -185,6 +207,7 @@ export default function SparkPage({ users, blockedUsers = [] }) {
               <Users size={20} color="var(--text-secondary)" />
             </button>
             <button
+              aria-label="Like"
               onClick={handleLike}
               style={{
                 width: '60px', height: '60px', borderRadius: '50%',
@@ -200,15 +223,15 @@ export default function SparkPage({ users, blockedUsers = [] }) {
         </div>
       )}
 
-      {/* Matches Tab */}
+      {/* Matches Tab — mutual matches only */}
       {tab === 'matches' && (
         <div style={{ padding: '20px 16px', animation: 'fadeIn 0.3s ease' }}>
-          {likedUsers.length > 0 ? (
+          {matchedUsers.length > 0 ? (
             <div style={{
               display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
               gap: '10px',
             }}>
-              {likedUsers.map(user => (
+              {matchedUsers.map(user => (
                 <div
                   key={user.id}
                   onClick={() => navigate(`/chat/${user.id}`)}
@@ -285,6 +308,9 @@ export default function SparkPage({ users, blockedUsers = [] }) {
       {/* Match Modal */}
       {matched && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="It's a Spark match"
           style={{
             position: 'fixed', inset: 0,
             background: 'rgba(0,0,0,0.9)',

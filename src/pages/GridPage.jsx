@@ -130,12 +130,14 @@ export default function GridPage({ users, rightNowMode, rightNowExpiry, activate
               {rightNowMode ? (isPremium ? 'ON' : formatTimeLeft(timeLeft)) : 'RIGHT NOW'}
             </button>
             <button
+              aria-label={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
               onClick={() => setViewMode(v => v === 'grid' ? 'list' : 'grid')}
               style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}
             >
               {viewMode === 'grid' ? <List size={18} /> : <LayoutGrid size={18} />}
             </button>
             <button
+              aria-label="Open filters"
               onClick={() => setShowFilters(true)}
               style={{
                 padding: '8px',
@@ -220,7 +222,7 @@ export default function GridPage({ users, rightNowMode, rightNowExpiry, activate
           <span style={{ flex: 1 }}>
             <strong style={{ color: 'var(--accent)' }}>⚡ Right Now Active</strong> — You're on top!{isPremium ? ' Premium — no time limit.' : <> <strong style={{ color: 'var(--accent)' }}>{formatTimeLeft(timeLeft)}</strong> remaining.</>}
           </span>
-          <button onClick={deactivateRightNow} style={{ color: 'var(--text-muted)', padding: 4 }}>
+          <button aria-label="Dismiss Right Now banner" onClick={deactivateRightNow} style={{ color: 'var(--text-muted)', padding: 4 }}>
             <X size={14} />
           </button>
         </div>
@@ -288,6 +290,9 @@ export default function GridPage({ users, rightNowMode, rightNowExpiry, activate
       {/* Right Now Payment Modal */}
       {showRightNowModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Right Now boost"
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 2000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -187,7 +187,7 @@ export function ChatPage({ conversations, users, onSendMessage }) {
         borderBottom: '1px solid var(--border-subtle)',
         flexShrink: 0,
       }}>
-        <button onClick={() => navigate('/messages')} style={{ padding: '6px' }}>
+        <button aria-label="Go back" onClick={() => navigate('/messages')} style={{ padding: '6px' }}>
           <ArrowLeft size={20} />
         </button>
         <div
@@ -220,10 +220,10 @@ export function ChatPage({ conversations, users, onSendMessage }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '4px' }}>
-          <button style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
+          <button aria-label="Call" style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
             <Phone size={18} />
           </button>
-          <button style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
+          <button aria-label="Video call" style={{ padding: '8px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }}>
             <Video size={18} />
           </button>
         </div>
@@ -294,7 +294,7 @@ export function ChatPage({ conversations, users, onSendMessage }) {
         borderTop: '1px solid var(--border-subtle)',
         flexShrink: 0,
       }}>
-        <button style={{ padding: '8px', color: 'var(--text-muted)' }}>
+        <button aria-label="Attach image" style={{ padding: '8px', color: 'var(--text-muted)' }}>
           <Image size={20} />
         </button>
         <input
@@ -315,6 +315,7 @@ export function ChatPage({ conversations, users, onSendMessage }) {
         />
         {newMessage.trim() ? (
           <button
+            aria-label="Send message"
             onClick={sendMessage}
             style={{
               width: '40px', height: '40px', borderRadius: '50%',
@@ -325,7 +326,7 @@ export function ChatPage({ conversations, users, onSendMessage }) {
             <Send size={18} color="#000" />
           </button>
         ) : (
-          <button style={{ padding: '8px', color: 'var(--text-muted)' }}>
+          <button aria-label="Voice message" style={{ padding: '8px', color: 'var(--text-muted)' }}>
             <Mic size={20} />
           </button>
         )}

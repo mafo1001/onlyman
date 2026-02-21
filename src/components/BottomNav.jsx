@@ -7,7 +7,7 @@ const navItems = [
   { to: '/', icon: Grid3X3, label: 'Explore' },
   { to: '/radar', icon: MapPin, label: 'Radar' },
   { to: '/spark', icon: Flame, label: 'Spark' },
-  { to: '/albums', icon: Image, label: 'Albums' },
+  { to: '/events', icon: Calendar, label: 'Events' },
   { to: '/messages', icon: MessageCircle, label: 'Chat', matchPaths: ['/messages', '/chat'] },
   { to: '/profile', icon: User, label: 'Me' },
 ];

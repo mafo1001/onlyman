@@ -13,6 +13,7 @@ import SettingsPage from './pages/SettingsPage';
 import AlbumsPage, { AlbumDetailPage } from './pages/AlbumsPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import RouteErrorBoundary from './components/RouteErrorBoundary';
 
 /* ── Error Boundary ── */
 class ErrorBoundary extends Component {
@@ -89,6 +90,18 @@ function App() {
   const [ghostMode, setGhostMode] = useState(() => {
     try { return JSON.parse(localStorage.getItem('om_ghostMode') || 'false'); } catch { return false; }
   });
+  const [distanceUnit, setDistanceUnit] = useState(() => {
+    try { return localStorage.getItem('om_distanceUnit') || 'km'; } catch { return 'km'; }
+  });
+  const [notifications, setNotifications] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('om_notifications') ?? 'true'); } catch { return true; }
+  });
+  const [showOnline, setShowOnline] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('om_showOnline') ?? 'true'); } catch { return true; }
+  });
+  const [showDistance, setShowDistance] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('om_showDistance') ?? 'true'); } catch { return true; }
+  });
   const [ready, setReady] = useState(false);
   const [myLocation, setMyLocation] = useState(null);
   const location = useLocation();
@@ -154,6 +167,18 @@ function App() {
   useEffect(() => {
     localStorage.setItem('om_ghostMode', JSON.stringify(ghostMode));
   }, [ghostMode]);
+  useEffect(() => {
+    localStorage.setItem('om_distanceUnit', distanceUnit);
+  }, [distanceUnit]);
+  useEffect(() => {
+    localStorage.setItem('om_notifications', JSON.stringify(notifications));
+  }, [notifications]);
+  useEffect(() => {
+    localStorage.setItem('om_showOnline', JSON.stringify(showOnline));
+  }, [showOnline]);
+  useEffect(() => {
+    localStorage.setItem('om_showDistance', JSON.stringify(showDistance));
+  }, [showDistance]);
 
   const handleSignUp = (userData) => {
     // Assign sequential user number (first 1000 get lifetime premium)
@@ -229,18 +254,18 @@ function App() {
   return (
     <div style={{ background: 'var(--bg-primary, #0a0a0a)', minHeight: '100dvh', paddingBottom: hideNav ? 0 : 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))', fontFamily: 'Inter, sans-serif' }}>
       <Routes>
-        <Route path="/" element={isSignedUp ? <GridPage users={users} blockedUsers={blockedUsers} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} ghostMode={ghostMode} isPremium={isPremium} /> : <Navigate to="/signup" replace />} />
-        <Route path="/radar" element={isSignedUp ? <RadarPage users={users} myLocation={myLocation} blockedUsers={blockedUsers} /> : <Navigate to="/signup" replace />} />
-        <Route path="/spark" element={isSignedUp ? <SparkPage users={users} blockedUsers={blockedUsers} /> : <Navigate to="/signup" replace />} />
-        <Route path="/messages" element={isSignedUp ? <MessagesPage conversations={conversations} blockedUsers={blockedUsers} /> : <Navigate to="/signup" replace />} />
-        <Route path="/chat/:id" element={isSignedUp ? <ChatPage conversations={conversations} users={users} onSendMessage={handleSendMessage} /> : <Navigate to="/signup" replace />} />
-        <Route path="/events" element={isSignedUp ? <EventsPage events={events} onJoinEvent={handleJoinEvent} /> : <Navigate to="/signup" replace />} />
-        <Route path="/profile" element={isSignedUp ? <ProfilePage isOwnProfile={true} users={users} albums={albums} currentUser={currentUser} /> : <Navigate to="/signup" replace />} />
-        <Route path="/profile/:id" element={isSignedUp ? <ProfilePage users={users} albums={albums} onBlock={handleBlock} blockedUsers={blockedUsers} /> : <Navigate to="/signup" replace />} />
+        <Route path="/" element={isSignedUp ? <RouteErrorBoundary name="Grid"><GridPage users={users} blockedUsers={blockedUsers} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} ghostMode={ghostMode} isPremium={isPremium} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/radar" element={isSignedUp ? <RouteErrorBoundary name="Radar"><RadarPage users={users} myLocation={myLocation} blockedUsers={blockedUsers} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/spark" element={isSignedUp ? <RouteErrorBoundary name="Spark"><SparkPage users={users} blockedUsers={blockedUsers} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/messages" element={isSignedUp ? <RouteErrorBoundary name="Messages"><MessagesPage conversations={conversations} blockedUsers={blockedUsers} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/chat/:id" element={isSignedUp ? <RouteErrorBoundary name="Chat"><ChatPage conversations={conversations} users={users} onSendMessage={handleSendMessage} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/events" element={isSignedUp ? <RouteErrorBoundary name="Events"><EventsPage events={events} onJoinEvent={handleJoinEvent} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/profile" element={isSignedUp ? <RouteErrorBoundary name="Profile"><ProfilePage isOwnProfile={true} users={users} albums={albums} currentUser={currentUser} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/profile/:id" element={isSignedUp ? <RouteErrorBoundary name="Profile"><ProfilePage users={users} albums={albums} onBlock={handleBlock} blockedUsers={blockedUsers} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/signup" element={<SignUpPage onSignUp={handleSignUp} />} />
-        <Route path="/settings" element={isSignedUp ? <SettingsPage currentUser={currentUser} setCurrentUser={setCurrentUser} onLogout={handleLogout} ghostMode={ghostMode} setGhostMode={setGhostMode} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} isPremium={isPremium} /> : <Navigate to="/signup" replace />} />
-        <Route path="/albums" element={isSignedUp ? <AlbumsPage albums={albums} setAlbums={setAlbums} users={users} /> : <Navigate to="/signup" replace />} />
-        <Route path="/albums/:albumId" element={isSignedUp ? <AlbumDetailPage albums={albums} setAlbums={setAlbums} users={users} /> : <Navigate to="/signup" replace />} />
+        <Route path="/settings" element={isSignedUp ? <RouteErrorBoundary name="Settings"><SettingsPage currentUser={currentUser} setCurrentUser={setCurrentUser} onLogout={handleLogout} ghostMode={ghostMode} setGhostMode={setGhostMode} rightNowMode={rightNowMode} rightNowExpiry={rightNowExpiry} activateRightNow={activateRightNow} deactivateRightNow={deactivateRightNow} isPremium={isPremium} distanceUnit={distanceUnit} setDistanceUnit={setDistanceUnit} notifications={notifications} setNotifications={setNotifications} showOnline={showOnline} setShowOnline={setShowOnline} showDistance={showDistance} setShowDistance={setShowDistance} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/albums" element={isSignedUp ? <RouteErrorBoundary name="Albums"><AlbumsPage albums={albums} setAlbums={setAlbums} users={users} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
+        <Route path="/albums/:albumId" element={isSignedUp ? <RouteErrorBoundary name="Album"><AlbumDetailPage albums={albums} setAlbums={setAlbums} users={users} /></RouteErrorBoundary> : <Navigate to="/signup" replace />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
       </Routes>

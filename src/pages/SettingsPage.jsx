@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, MapPin, Shield, Eye, Trash2, LogOut, ChevronRight, Moon, FileText, Ghost, Zap } from 'lucide-react';
 
-export default function SettingsPage({ currentUser, setCurrentUser, onLogout, ghostMode, setGhostMode, rightNowMode, rightNowExpiry, activateRightNow, deactivateRightNow, isPremium }) {
+export default function SettingsPage({ currentUser, setCurrentUser, onLogout, ghostMode, setGhostMode, rightNowMode, rightNowExpiry, activateRightNow, deactivateRightNow, isPremium, distanceUnit, setDistanceUnit, notifications, setNotifications, showOnline, setShowOnline, showDistance, setShowDistance }) {
   const navigate = useNavigate();
-  const [distanceUnit, setDistanceUnit] = useState('km');
-  const [notifications, setNotifications] = useState(true);
-  const [showOnline, setShowOnline] = useState(true);
-  const [showDistance, setShowDistance] = useState(true);
   const [darkMode] = useState(true); // Always dark
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -76,7 +72,7 @@ export default function SettingsPage({ currentUser, setCurrentUser, onLogout, gh
         padding: '16px', position: 'sticky', top: 0, zIndex: 10,
         background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-subtle)',
       }}>
-        <button onClick={() => navigate(-1)} style={{ color: 'var(--text-primary)' }}>
+        <button aria-label="Go back" onClick={() => navigate(-1)} style={{ color: 'var(--text-primary)' }}>
           <ArrowLeft size={22} />
         </button>
         <h1 style={{ fontSize: 18, fontWeight: 700 }}>Settings</h1>
@@ -275,6 +271,9 @@ export default function SettingsPage({ currentUser, setCurrentUser, onLogout, gh
       {/* Delete confirmation modal */}
       {confirmDelete && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Delete account confirmation"
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 2000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',

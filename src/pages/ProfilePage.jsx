@@ -124,6 +124,7 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
         {/* Back button */}
         {!isOwnProfile && (
           <button
+            aria-label="Go back"
             onClick={() => navigate(-1)}
             style={{
               position: 'absolute', top: '12px', left: '12px',
@@ -140,6 +141,7 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
         {/* More button */}
         {!isOwnProfile && (
           <button
+            aria-label="More options"
             onClick={() => setShowActions(!showActions)}
             style={{
               position: 'absolute', top: '12px', right: '12px',
@@ -385,6 +387,9 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
       {/* Edit Profile Modal */}
       {showEdit && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Edit profile"
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 2000,
             display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
@@ -493,6 +498,66 @@ export default function ProfilePage({ users, isOwnProfile = false, currentUser =
               );
               return (
                 <>
+                  {/* Photo Upload Section */}
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 8 }}>
+                      Photos
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                      {/* Existing photos */}
+                      {(editForm?.photos || [user.avatar, ...(user.photos || [])]).map((photo, idx) => (
+                        <div key={idx} style={{
+                          aspectRatio: '1', borderRadius: 'var(--radius-md)', overflow: 'hidden',
+                          position: 'relative', background: 'var(--bg-tertiary)',
+                        }}>
+                          <img src={photo} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          {idx === 0 && (
+                            <span style={{
+                              position: 'absolute', bottom: 4, left: 4,
+                              padding: '2px 6px', borderRadius: 4,
+                              background: 'var(--accent)', color: '#000',
+                              fontSize: 9, fontWeight: 700,
+                            }}>MAIN</span>
+                          )}
+                        </div>
+                      ))}
+                      {/* Add photo button */}
+                      <label style={{
+                        aspectRatio: '1', borderRadius: 'var(--radius-md)',
+                        border: '2px dashed var(--border-accent)',
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', background: 'rgba(0,255,102,0.04)',
+                        gap: 4,
+                      }}>
+                        <Camera size={22} color="var(--accent)" />
+                        <span style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600 }}>Add Photo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            files.forEach(file => {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                setEditForm(prev => ({
+                                  ...(prev || form),
+                                  photos: [...(prev?.photos || [user.avatar, ...(user.photos || [])]), ev.target.result],
+                                }));
+                              };
+                              reader.readAsDataURL(file);
+                            });
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                      Photos are stored locally. Connect Supabase for cloud storage.
+                    </p>
+                  </div>
+
                   <Field label="Name" field="name" placeholder="Your name" />
                   <Field label="Age" field="age" placeholder="Your age" />
                   <Field label="Bio" field="bio" placeholder="Write something about yourself..." multiline />
